@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全球绿色甲醇项目数据库</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-leaflet@0.1.0/chartjs-leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🌱 全球绿色甲醇项目数据库</h1>
+            <p class="subtitle">实时追踪全球绿色甲醇项目进展</p>
+            <div class="last-update">
+                最后更新: <span id="lastUpdate">加载中...</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- 统计卡片 -->
+        <section class="stats-section">
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                    <div class="stat-label">总项目数</div>
+                    <div class="stat-value" id="totalProjects">0</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-content">
+                    <div class="stat-label">总产能(万吨/年)</div>
+                    <div class="stat-value" id="totalCapacity">0</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏗️</div>
+                <div class="stat-content">
+                    <div class="stat-label">在建项目</div>
+                    <div class="stat-value" id="activeProjects">0</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏭</div>
+                <div class="stat-content">
+                    <div class="stat-label">已投产项目</div>
+                    <div class="stat-value" id="completedProjects">0</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 搜索和筛选 -->
+        <section class="filter-section">
+            <div class="filter-controls">
+                <input type="text" id="searchInput" placeholder="搜索项目名称、企业..." class="search-input">
+                <select id="companyFilter" class="filter-select">
+                    <option value="">所有企业</option>
+                </select>
+                <select id="regionFilter" class="filter-select">
+                    <option value="">所有地区</option>
+                </select>
+                <select id="statusFilter" class="filter-select">
+                    <option value="">所有状态</option>
+                </select>
+                <button onclick="exportCSV()" class="btn btn-secondary">导出CSV</button>
+            </div>
+        </section>
+
+        <!-- 项目地图 -->
+        <section class="map-section">
+            <h2>📍 项目分布地图</h2>
+            <div id="map" class="map-container"></div>
+        </section>
+
+        <!-- 统计图表 -->
+        <section class="charts-section">
+            <div class="chart-row">
+                <div class="chart-container">
+                    <h3>企业产能分布</h3>
+                    <canvas id="companyChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>地区产能分布</h3>
+                    <canvas id="regionChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-row">
+                <div class="chart-container">
+                    <h3>项目状态分布</h3>
+                    <canvas id="statusChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>技术路线分布</h3>
+                    <canvas id="technologyChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- 项目列表 -->
+        <section class="projects-section">
+            <h2>📋 项目列表</h2>
+            <div class="table-container">
+                <table id="projectsTable">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable(0)">项目ID ↕</th>
+                            <th onclick="sortTable(1)">项目名称 ↕</th>
+                            <th onclick="sortTable(2)">企业 ↕</th>
+                            <th onclick="sortTable(3)">地区 ↕</th>
+                            <th onclick="sortTable(4)">产能(万吨/年) ↕</th>
+                            <th onclick="sortTable(5)">状态 ↕</th>
+                            <th onclick="sortTable(6)">技术路线 ↕</th>
+                            <th onclick="sortTable(7)">投资额(亿元) ↕</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projectsTableBody">
+                        <tr>
+                            <td colspan="8" class="loading">加载中...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination">
+                <button onclick="previousPage()" class="btn btn-secondary">上一页</button>
+                <span id="pageInfo">第 1 页</span>
+                <button onclick="nextPage()" class="btn btn-secondary">下一页</button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 绿色甲醇项目数据库 | 数据每周自动更新 | 
+            <a href="https://github.com/yourusername/green-methanol-database" target="_blank">GitHub仓库</a></p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
