@@ -90,78 +90,7 @@ function updateLastUpdate(timestamp) {
     document.getElementById('lastUpdate').textContent = timeText;
 }
 
-// 初始化地图
-function initMap() {
-    const map = L.map('map').setView([35.8617, 104.1954], 4);
-    
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-    
-    window.projectMap = map;
-}
 
-// 更新地图标记
-function updateMapMarkers() {
-    if (!window.projectMap) return;
-    
-    // 清除现有标记
-    window.projectMap.eachLayer(layer => {
-        if (layer instanceof L.Marker) {
-            window.projectMap.removeLayer(layer);
-        }
-    });
-    
-    // 项目位置坐标映射
-    const coordinates = {
-        '内蒙古': [43.8171, 114.8112],
-        '吉林': [43.9167, 125.3245],
-        '黑龙江': [45.8038, 126.5350],
-        '辽宁': [41.2956, 123.4315],
-        '新疆': [41.1128, 85.2401],
-        '海南': [19.1981, 109.7448],
-        '上海': [31.2304, 121.4737],
-        '河南': [33.8820, 113.6147],
-        '山东': [36.6758, 117.0204],
-        '广西': [23.8298, 108.7881],
-        '通辽': [43.6335, 122.2478],
-        '兴安盟': [46.0763, 122.0376],
-        '巴彦淖尔': [40.7574, 107.4164],
-        '赤峰': [42.2572, 118.8870],
-        '梅河口': [42.5443, 125.6586],
-        '洮南': [45.3544, 122.7870],
-        '调兵山': [42.4575, 123.5348],
-        '通榆': [44.8149, 123.0900],
-        '阿拉善': [38.8429, 105.7351],
-        '大安': [45.5094, 124.2955],
-        '松原': [45.1410, 124.8255],
-        '大庆': [46.5906, 125.1037],
-        '北海': [21.4812, 109.1202],
-    };
-    
-    // 添加项目标记
-    filteredProjects.forEach(project => {
-        let coords = null;
-        
-        // 尝试匹配地点
-        for (const [location, locationCoords] of Object.entries(coordinates)) {
-            if (project.location && project.location.includes(location)) {
-                coords = locationCoords;
-                break;
-            }
-        }
-        
-        if (coords) {
-            const marker = L.marker(coords).addTo(window.projectMap);
-            marker.bindPopup(`
-                <strong>${project.name}</strong><br>
-                企业: ${project.company}<br>
-                产能: ${project.capacity}万吨/年<br>
-                状态: ${project.status}
-            `);
-        }
-    });
-}
 
 // 更新筛选器选项
 function updateFilters() {
@@ -216,9 +145,9 @@ function applyFilters() {
             project.company.toLowerCase().includes(searchTerm) ||
             project.technology.toLowerCase().includes(searchTerm);
         
-        const matchesCompany = !companyFilter || project.company === companyFilter;
-        const matchesRegion = !regionFilter || project.location.includes(regionFilter);
-        const matchesStatus = !statusFilter || project.status === statusFilter;
+        const matchesCompany = !companyFilter || (project.company && project.company === companyFilter);
+        const matchesRegion = !regionFilter || (project.location && project.location.includes(regionFilter));
+        const matchesStatus = !statusFilter || (project.status && project.status === statusFilter);
         
         return matchesSearch && matchesCompany && matchesRegion && matchesStatus;
     });
@@ -299,11 +228,16 @@ function sortTable(columnIndex) {
     const key = keys[columnIndex];
     
     filteredProjects.sort((a, b) => {
-        let valA = a[key];
-        let valB = b[key];
+        let valA = a[key] || '';
+        let valB = b[key] || '';
         
-        if (typeof valA === 'string') valA = valA.toLowerCase();
-        if (typeof valB === 'string') valB = valB.toLowerCase();
+        if (key === 'capacity') {
+            valA = parseFloat(valA) || 0;
+            valB = parseFloat(valB) || 0;
+        } else if (typeof valA === 'string') {
+            valA = valA.toLowerCase();
+            valB = valB.toLowerCase();
+        }
         
         if (valA < valB) return sortAscending ? -1 : 1;
         if (valA > valB) return sortAscending ? 1 : -1;
@@ -391,23 +325,48 @@ function renderRegionChart() {
     });
 }
 
-// 状态分布图表
+// 状态分布图表 - 归类
 function renderStatusChart() {
-    const statusData = {};
+    const statusData = {
+        '立项': 0,
+        '备案': 0,
+        '前期开发': 0,
+        '建设期': 0,
+        '已投产加注': 0,
+        '技改在建': 0,
+        '已投产未加注': 0
+    };
+    
     filteredProjects.forEach(p => {
         if (p.status) {
-            statusData[p.status] = (statusData[p.status] || 0) + 1;
+            if (p.status.includes('立项') || p.status.includes('规划')) {
+                statusData['立项']++;
+            } else if (p.status.includes('备案')) {
+                statusData['备案']++;
+            } else if (p.status.includes('前期') || p.status.includes('筹备')) {
+                statusData['前期开发']++;
+            } else if (p.status.includes('建设') || p.status.includes('施工')) {
+                statusData['建设期']++;
+            } else if (p.status.includes('投产') && p.status.includes('加注')) {
+                statusData['已投产加注']++;
+            } else if (p.status.includes('技改') && p.status.includes('建设')) {
+                statusData['技改在建']++;
+            } else if (p.status.includes('投产')) {
+                statusData['已投产未加注']++;
+            }
         }
     });
     
     new Chart(document.getElementById('statusChart'), {
-        type: 'pie',
+        type: 'bar',
         data: {
             labels: Object.keys(statusData),
             datasets: [{
+                label: '项目数量',
                 data: Object.values(statusData),
                 backgroundColor: [
-                    '#27ae60', '#f39c12', '#3498db', '#e74c3c', '#9b59b6'
+                    '#1e3a8a', '#1e40af', '#2563eb', '#3b82f6', '#60a5fa',
+                    '#1e40af', '#3b82f6'
                 ]
             }]
         },
@@ -415,7 +374,46 @@ function renderStatusChart() {
             responsive: true,
             plugins: {
                 legend: {
-                    position: 'right'
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        font: { size: 13, weight: '600' },
+                        color: '#1e3a8a'
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.dataset.label}: ${context.parsed.y}个`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: '项目数量(个)',
+                        font: { size: 14, weight: '600' },
+                        color: '#1e3a8a'
+                    },
+                    ticks: {
+                        font: { size: 12 },
+                        color: '#64748b'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: '项目状态',
+                        font: { size: 14, weight: '600' },
+                        color: '#1e3a8a'
+                    },
+                    ticks: {
+                        font: { size: 12 },
+                        color: '#64748b'
+                    }
                 }
             }
         }
@@ -471,13 +469,14 @@ function renderTechnologyChart() {
 
 // 导出CSV
 function exportCSV() {
-    const headers = ['ID', '项目名称', '企业', '地点', '产能(万吨/年)', '状态', '技术路线', '投资额(亿元)', '开始日期', '完成日期', '来源'];
+    const headers = ['序号', '投资集团', '项目公司', '项目名称', '地区', '产能(万吨/年)', '项目状态', '技术路线', '投资额(亿元)', '开始日期', '完成日期', '来源'];
     const csvContent = [
         headers.join(','),
-        ...filteredProjects.map(p => [
-            p.id,
-            `"${p.name}"`,
+        ...filteredProjects.map((p, index) => [
+            (filteredProjects.indexOf(p) + 1),
             `"${p.company}"`,
+            `"${p.subCompany}"`,
+            `"${p.name}"`,
             `"${p.location}"`,
             p.capacity,
             `"${p.status}"`,
