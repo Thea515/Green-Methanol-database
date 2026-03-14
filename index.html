@@ -71,11 +71,7 @@
             </div>
         </section>
 
-        <!-- 项目地图 -->
-        <section class="map-section">
-            <h2>📍 项目分布地图</h2>
-            <div id="map" class="map-container"></div>
-        </section>
+
 
         <!-- 统计图表 -->
         <section class="charts-section">
@@ -108,19 +104,20 @@
                 <table id="projectsTable">
                     <thead>
                         <tr>
-                            <th onclick="sortTable(0)">项目ID ↕</th>
-                            <th onclick="sortTable(1)">项目名称 ↕</th>
-                            <th onclick="sortTable(2)">企业 ↕</th>
-                            <th onclick="sortTable(3)">地区 ↕</th>
-                            <th onclick="sortTable(4)">产能(万吨/年) ↕</th>
-                            <th onclick="sortTable(5)">状态 ↕</th>
-                            <th onclick="sortTable(6)">技术路线 ↕</th>
-                            <th onclick="sortTable(7)">投资额(亿元) ↕</th>
+                            <th onclick="sortTable(0)">序号 ↕</th>
+                            <th onclick="sortTable(1)">投资集团 ↕</th>
+                            <th onclick="sortTable(2)">项目公司 ↕</th>
+                            <th onclick="sortTable(3)">项目名称 ↕</th>
+                            <th onclick="sortTable(4)">地区 ↕</th>
+                            <th onclick="sortTable(5)">产能(万吨/年) ↕</th>
+                            <th onclick="sortTable(6)">项目状态 ↕</th>
+                            <th onclick="sortTable(7)">技术路线 ↕</th>
+                            <th onclick="sortTable(8)">投资额(亿元) ↕</th>
                         </tr>
                     </thead>
                     <tbody id="projectsTableBody">
                         <tr>
-                            <td colspan="8" class="loading">加载中...</td>
+                            <td colspan="9" class="loading">加载中...</td>
                         </tr>
                     </tbody>
                 </table>
