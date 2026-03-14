@@ -72,15 +72,18 @@ header h1 {
 }
 
 .stat-label {
-    color: #7f8c8d;
-    font-size: 14px;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 500;
     margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .stat-value {
-    color: #2c3e50;
-    font-size: 28px;
-    font-weight: bold;
+    color: #1e3a8a;
+    font-size: 32px;
+    font-weight: 700;
 }
 
 /* 筛选器样式 */
